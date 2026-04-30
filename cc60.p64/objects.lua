@@ -172,7 +172,7 @@ function init_object(type, x, y, tile)
 				for i = 1, abs(amt) do
 					if not obj.is_solid(d, step - d) then
 						obj[axis] += step
-					elseif (axis == "y" and (i < obj.rem[axis])) or axis == "x" then
+					else
 						obj.spd[axis], obj.rem[axis] = 0, 0
 						break
 					end

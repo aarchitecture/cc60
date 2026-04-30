@@ -75,7 +75,17 @@ function player:update()
 	if self.dash_time > 0 then
 		self.init_smoke()
 		self.dash_time -= 1
-		self.spd = vec(appr(self.spd.x, self.dash_target_x, self.dash_accel_x), appr(self.spd.y, self.dash_target_y, self.dash_accel_y))
+		local dash_x = appr(self.spd.x, self.dash_target_x, self.dash_accel_x)
+		local dash_y = appr(self.spd.y, self.dash_target_y, self.dash_accel_y)
+
+		-- bonks zero y speed in move(), but at 60fps the scaled dash accel is too
+		-- small to reliably reassert vertical carry through subpixel rounding
+		-- restore dash vertical intent immediately so the vanilla dash quirk survives
+		if self.spd.y == 0 and self.dash_target_y ~= 0 and not on_ground then
+			dash_y = self.dash_target_y
+		end
+
+		self.spd = vec(dash_x, dash_y)
 	else
 		-- horizontal movement uses different acceleration curves for ground, air, and ice
 		local accel = self.is_ice(0, 1) and ice_accel or on_ground and ground_accel or air_accel
@@ -102,14 +112,6 @@ function player:update()
 			self.spd.y = appr(self.spd.y, maxfall, abs(self.spd.y) > fast_gravity_threshold and gravity or gravity / 2)
 		elseif self.spd.y > 0 then
 			self.spd.y = 0
-		end
-
-		if self.is_solid(0, -1) and self.spd.y < 0 then
-			self.spd.y = appr(self.spd.y, maxfall, abs(self.spd.y) > fast_gravity_threshold and gravity * ceiling_gravity_fast_scale or gravity / ceiling_gravity_slow_divisor)
-			if self.spd.x == 0 then
-				self.dash_time = 0
-				self.dash_effect_time = 0
-			end
 		end
 
 		if self.jbuffer > 0 then
@@ -170,11 +172,6 @@ function player:update()
 	self.spd.x ~= 0 and input_x ~= 0 and 1 + self.spr_off % 4 or 1
 
 	self.was_on_ground = on_ground
-
-	if self.spd.y < 0 and self.is_solid(0, -1) and self.dash_time == 0 then
-		self.spd.y = 0
-		self.rem.y = 0
-	end
 
 	if should_exit_level(self.x, self.y) then
 		next_level()
