@@ -1,0 +1,25 @@
+yeah here you go, we now have 60fps celeste on picotron. this is (probably) usable as a base cart for modding, i've kept stuff as modular as possible.
+
+based on:
+ a. original celeste classic as a reference
+ b. evercore for the implementations of a lot of mechanics
+ c. evertron for picotron code style inspiration
+
+which were made by the following very cool people:
+- maddy thorson
+- noel berry
+- petra
+- meep
+- gonengazit
+- akliant
+- ooooggll
+- pancelor
+
+differences from the original celeste classic:
+- hair physics are completely different
+- camera is also completely different
+- it's 60fps (no shit)
+- the codebase is very differently structured
+- i forgot the rest, if you have the time make a PR to document the other differences
+
+other than that, the codebase is probably decently readable and well-commented enough for you to know what you're doing, have fun!
