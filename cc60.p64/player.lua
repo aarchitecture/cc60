@@ -286,7 +286,7 @@ function player_spawn:init()
 		self.flip.x = true
 	end
 
-	cam_x, cam_y = mid(self.x + 4, 64, lvl_pw - 64), mid(self.y, 64, lvl_ph - 64)
+	cam_x, cam_y = clamp_camera_target(self.x + 4, self.y)
 
 	self.state = 0
 	self.delay = 0

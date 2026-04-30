@@ -258,8 +258,7 @@ function move_camera(obj)
 		target_y = focus_y - camera_deadzone_y
 	end
 
-	target_x = mid(target_x, game_w / 2, lvl_pw - game_w / 2)
-	target_y = mid(target_y, game_h / 2, lvl_ph - game_h / 2)
+	target_x, target_y = clamp_camera_target(target_x, target_y)
 
 	cam_spdx = target_x - cam_x
 	cam_spdy = target_y - cam_y

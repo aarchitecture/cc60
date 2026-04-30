@@ -96,8 +96,7 @@ function _draw()
 	end
 
 	draw_background()
-	draw_x = cam_x - game_w / 2
-	draw_y = cam_y - game_h / 2
+	draw_x, draw_y = get_camera_draw_offset()
 	camera(draw_x, draw_y)
 	draw_world()
 	draw_effects()

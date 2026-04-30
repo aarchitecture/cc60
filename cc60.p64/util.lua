@@ -40,6 +40,34 @@ function center_print(text, x, y, c)
 	print(text, x - w / 2, y, c)
 end
 
+function get_camera_max_draw()
+	local max_draw_x = max(lvl_pw - game_w, 0)
+	local max_draw_y = max(lvl_ph - game_h, 0)
+
+	-- treat near-screen-sized rooms as locked to avoid a 1px wobble
+	-- when tile dimensions do not divide cleanly into the viewport
+	if max_draw_x <= 1 then
+		max_draw_x = 0
+	end
+	if max_draw_y <= 1 then
+		max_draw_y = 0
+	end
+
+	return max_draw_x, max_draw_y
+end
+
+function clamp_camera_target(target_x, target_y)
+	local max_draw_x, max_draw_y = get_camera_max_draw()
+	return mid(target_x, game_w / 2, game_w / 2 + max_draw_x),
+		mid(target_y, game_h / 2, game_h / 2 + max_draw_y)
+end
+
+function get_camera_draw_offset()
+	local max_draw_x, max_draw_y = get_camera_max_draw()
+	return mid(cam_x - game_w / 2, 0, max_draw_x),
+		mid(cam_y - game_h / 2, 0, max_draw_y)
+end
+
 function set_font(font)
 	fetch("/system/fonts/" .. font .. ".font"):poke(0x4000)
 	game_font = font
