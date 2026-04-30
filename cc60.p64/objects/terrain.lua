@@ -16,11 +16,11 @@ function spring:update()
 
 	if self.show and hit and self.delta <= spring_trigger_delta then
 		if self.dir == 0 then
-			hit.move(0, self.y - hit.y - 4, 1)
+			hit.move(0, self.y - hit.y - 4)
 			hit.spd.x *= spring_vertical_x_scale
 			hit.spd.y = spring_vertical_y
 		else
-			hit.move(self.x + self.dir * 4 - hit.x, 0, 1)
+			hit.move(self.x + self.dir * 4 - hit.x, 0)
 			hit.spd = vec(self.dir * spring_horizontal_x, spring_horizontal_y)
 		end
 		hit.dash_time = 0

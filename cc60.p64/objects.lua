@@ -156,7 +156,7 @@ function init_object(type, x, y, tile)
 		return obj.check(player, 0, 0)
 	end
 
-	function obj.move(ox, oy, start)
+	function obj.move(ox, oy)
 		for axis in all{"x", "y"} do
 			local delta = axis == "x" and ox or oy
 			obj.rem[axis] += delta
@@ -194,16 +194,15 @@ function init_object(type, x, y, tile)
 			end
 			if (obj.solid_obj or obj.semisolid_obj) and obj.collideable then
 				obj.collideable = false
-				local hit = obj.player_here()
-				if hit and obj.solid_obj then
-					hit.move(axis == "x" and (amt > 0 and obj.right() + 1 - hit.left() or amt < 0 and obj.left() - hit.right() - 1) or 0,
-							axis == "y" and (amt > 0 and obj.bottom() + 1 - hit.top() or amt < 0 and obj.top() - hit.bottom() - 1) or 0,
-							1)
-					if obj.player_here() then
-						kill_player(hit)
-					end
+					local hit = obj.player_here()
+					if hit and obj.solid_obj then
+						hit.move(axis == "x" and (amt > 0 and obj.right() + 1 - hit.left() or amt < 0 and obj.left() - hit.right() - 1) or 0,
+								axis == "y" and (amt > 0 and obj.bottom() + 1 - hit.top() or amt < 0 and obj.top() - hit.bottom() - 1) or 0)
+						if obj.player_here() then
+							kill_player(hit)
+						end
 					elseif riding then
-						riding.move(axis == "x" and movamt or 0, axis == "y" and movamt or 0, 1)
+						riding.move(axis == "x" and movamt or 0, axis == "y" and movamt or 0)
 						if riding.hair then
 							for h in all(riding.hair) do
 								h.x += axis == "x" and movamt or 0
@@ -267,10 +266,6 @@ function move_camera(obj)
 
 	cam_x = target_x
 	cam_y = target_y
-end
-
-function draw_object(obj)
-	obj:draw()
 end
 
 include "objects/terrain.lua"

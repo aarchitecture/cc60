@@ -55,7 +55,7 @@ end
 function step_objects()
 	foreach(objects, function(obj)
 		if obj.spd.x ~= 0 or obj.spd.y ~= 0 or obj.rem.x ~= 0 or obj.rem.y ~= 0 then
-			obj.move(obj.spd.x, obj.spd.y, 0)
+			obj.move(obj.spd.x, obj.spd.y)
 		end
 		obj:update()
 		clamp_clamped_object(obj)

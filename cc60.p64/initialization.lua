@@ -1,7 +1,6 @@
 -- [initialization]
 
 function _init()
-	picotron_frames = 0
 	frames = 0
 	start_game_flash = 0
 

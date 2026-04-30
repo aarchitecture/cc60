@@ -235,12 +235,6 @@ function draw_hair(obj)
 		h.x += (tx - h.x) * hair_pull
 		h.y += (ty - h.y) * hair_pull
 
-		-- clamp distance
-		local dx = h.x - lastx
-		local dy = h.y - lasty
-
-		local dist = sqrt(dx*dx + dy*dy)
-
 		-- draw
 		circfill(
 			h.x,
