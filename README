@@ -23,3 +23,5 @@ differences from the original celeste classic:
 - i forgot the rest, if you have the time make a PR to document the other differences
 
 other than that, the codebase is probably decently readable and well-commented enough for you to know what you're doing, have fun!
+
+this project is licensed under CC BY 4.0 (see LICENSE for details). you are free to use, modify, and redistribute it, including commercially, as long as you provide appropriate credit to the author(s) listed above and the maintainer(s) of this project.
