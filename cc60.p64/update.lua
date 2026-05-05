@@ -22,10 +22,10 @@ end
 
 function step_restart()
 	if delay_restart > 0 then
-		cam_spdx, cam_spdy = 0, 0
+		cam.spdx, cam.spdy = 0, 0
 		delay_restart -= 1
 		if delay_restart == 0 then
-			load_level(lvl_id)
+			load_level(level.id)
 		end
 	end
 end
@@ -33,11 +33,11 @@ end
 function clamp_clamped_object(obj)
 	if obj.clamps then
 		local clamped = obj.x
-		if lvl_exit ~= "left" then
+		if not level_has_exit("left") then
 			clamped = max(-1, clamped)
 		end
-		if lvl_exit ~= "right" then
-			clamped = min(lvl_pw - 7, clamped)
+		if not level_has_exit("right") then
+			clamped = min(level.pw - 7, clamped)
 		end
 
 		if obj.x ~= clamped then
@@ -45,7 +45,7 @@ function clamp_clamped_object(obj)
 			obj.spd.x = 0
 		end
 
-		if lvl_exit ~= "up" and obj.y < -1 then
+		if not level.summit and not level_has_exit("up") and obj.y < -1 then
 			obj.y = -1
 			obj.spd.y = 0
 		end
@@ -63,19 +63,25 @@ function step_objects()
 end
 
 function step_camera()
-	if cam_target then
-		move_camera(cam_target)
+	if cam.target then
+		move_camera(cam.target)
 	end
 end
 
+function title_confirm_pressed()
+	local jump = action_pressed("jump", title_input)
+	local dash = action_pressed("dash", title_input)
+	return jump or dash
+end
+
 function step_title()
-	if is_title() then
+	if is_title then
 		if start_game then
 			start_game_flash -= 1
 			if start_game_flash <= title_flash_end then
 				begin_game()
 			end
-		elseif btn(4) or btn(5) then
+		elseif title_confirm_pressed() then
 			music(-1)
 			start_game_flash, start_game = title_flash_start, true
 			sfx(38)
@@ -86,6 +92,11 @@ end
 function _update()
 	step_clock()
 	step_music()
+
+	if text_overlay_active() then
+		update_text_overlay()
+		return
+	end
 
 	if freeze > 0 then
 		freeze -= 1

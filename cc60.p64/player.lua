@@ -31,7 +31,7 @@ function player:update()
 		dead = true
 	end
 
-	if self.y > lvl_ph and lvl_exit ~= "down" then
+	if self.y > level.ph and not level_has_exit("down") then
 		kill_player(self)
 		dead = true
 	end
@@ -166,15 +166,24 @@ function player:update()
 	end
 
 	self.spr_off += walk_anim_step
-	self.spr = not on_ground and (self.is_solid(input_x, 0) and 5 or 3) or
-	action_down("down") and 6 or
-	action_down("up") and 7 or
-	self.spd.x ~= 0 and input_x ~= 0 and 1 + self.spr_off % 4 or 1
+
+	if config.fix_player_anim_slide then
+		self.spr = not on_ground and (self.is_solid(input_x, 0) and 5 or 3) or
+		self.spd.x ~= 0 and input_x ~= 0 and 1 + self.spr_off % 4 or
+		action_down("down") and 6 or
+		action_down("up") and 7 or 1
+	else
+		self.spr = not on_ground and (self.is_solid(input_x, 0) and 5 or 3) or
+		action_down("down") and 6 or
+		action_down("up") and 7 or
+		self.spd.x ~= 0 and input_x ~= 0 and 1 + self.spr_off % 4 or 1
+	end
 
 	self.was_on_ground = on_ground
 
-	if should_exit_level(self.x, self.y) then
-		next_level()
+	local exit_dir = should_exit_level(self.x, self.y)
+	if exit_dir then
+		next_level(exit_dir)
 	end
 end
 
@@ -203,7 +212,7 @@ function init_hair(obj)
 end
 
 function get_hair_color(djump)
-	local col = hair_colors[djump]
+	local col = config.hair_colors[djump]
 	local total_frames = seconds * 60 + frames
 
 	if type(col) == "table" then
@@ -215,7 +224,7 @@ function get_hair_color(djump)
 end
 
 function set_hair_color(djump)
-	pal(hair_color, get_hair_color(djump))
+	pal(config.default_hair_color, get_hair_color(djump))
 end
 
 function draw_hair(obj)
@@ -237,7 +246,7 @@ function draw_hair(obj)
 			h.x,
 			h.y,
 			mid(4-i,1.8,2),
-			hair_color
+			config.default_hair_color
 		)
 
 		lastx = h.x
@@ -267,26 +276,25 @@ player_spawn = {
 	draw = player.draw
 }
 function player_spawn:init()
-	sfx(4)
 	self.spr = 3
 	self.target = self.y
 
-	if lvl_enter == "up" then
-		self.y = min(self.y + spawn_vertical_offset, lvl_ph)
+	if level.enter == "up" then
+		self.y = min(self.y + spawn_vertical_offset, level.ph)
 		self.spd.y = spawn_up_speed
-	elseif lvl_enter == "down" then
+	elseif level.enter == "down" then
 		self.y = max(self.y - spawn_vertical_offset, spawn_down_min_y)
 		self.spd.y = spawn_down_speed
-	elseif lvl_enter == "right" then
+	elseif level.enter == "right" then
 		self.spd = vec(spawn_side_speed_x, spawn_side_speed_y)
 		self.x -= spawn_side_offset_x
-	elseif lvl_enter == "left" then
+	elseif level.enter == "left" then
 		self.spd = vec(-spawn_side_speed_x, spawn_side_speed_y)
 		self.x += spawn_side_offset_x
 		self.flip.x = true
 	end
 
-	cam_x, cam_y = clamp_camera_target(self.x + 4, self.y)
+	cam.x, cam.y = clamp_camera_target(self.x + 4, self.y)
 
 	self.state = 0
 	self.delay = 0
@@ -294,10 +302,15 @@ function player_spawn:init()
 	init_hair(self)
 	self.djump = max_djump
 end
+function player_spawn:ready()
+	if cam.target == self then
+		sfx(4)
+	end
+end
 function player_spawn:update()
 	if self.state == 0 and self.y < self.target + spawn_apex_height then
 		self.state = 1
-		if lvl_enter ~= "down" then
+		if level.enter ~= "down" then
 			self.delay = spawn_apex_delay
 		end
 	elseif self.state == 1 then

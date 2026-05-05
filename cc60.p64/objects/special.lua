@@ -21,8 +21,9 @@ end
 
 -- interactable world text
 message = {
-	layer = 4
+	layer = 10
 }
+
 function message:init()
 	self.text = "-- celeste mountain --#this memorial to those# perished on the climb"
 	self.hitbox.x += 4
@@ -30,7 +31,8 @@ function message:init()
 	self.index = 0
 	self.last = 0
 end
-function message:draw()
+
+function message:update()
 	if self.check(player, 4, 0) then
 		if self.index < #self.text then
 			self.index += message_index_step
@@ -39,9 +41,17 @@ function message:draw()
 				sfx(35)
 			end
 		end
+	else
+		self.index = 0
+		self.last = 0
+	end
+end
+
+function message:draw()
+	if self.index > 0 then
+		camera()
 		local x, y = game_w / 2 - 56, game_h - 32
 		local line_start_x = x
-		camera()
 		for i = 1, self.index do
 			if sub(self.text, i, i) ~= "#" then
 				rectfill(x - 2, y - 2, x + 7, y + 6, 7)
@@ -52,21 +62,23 @@ function message:draw()
 				y += 7
 			end
 		end
-		camera(draw_x, draw_y)
-	else
-		self.index = 0
-		self.last = 0
+		camera(cam.draw_x, cam.draw_y)
 	end
 end
+
 function message:draw_below()
 	spr(12, self.x, self.y)
 end
 
 -- level completion marker and summary
-flag = {}
+flag = {
+	layer = 10
+}
+
 function flag:init()
 	self.x += 5
 end
+
 function flag:update()
 	if not self.show and self.player_here() then
 		sfx(55)
@@ -74,8 +86,8 @@ function flag:update()
 		time_ticking = false
 	end
 end
+
 function flag:draw()
-	spr(16 + frames / 10 % 3, self.x, self.y)
 	if self.show then
 		camera()
 		rectfill(game_w / 2 - 32, 2, game_w / 2 + 32, 31, 0)
@@ -95,7 +107,10 @@ function flag:draw()
 		local deaths_text = "deaths:" .. deaths
 		local deaths_w = print(deaths_text, 0, -1000)
 		print(deaths_text, flr(game_w / 2 - deaths_w / 2), 24, 7)
-
-		camera(draw_x, draw_y)
+		camera(cam.draw_x, cam.draw_y)
 	end
+end
+
+function flag:draw_below()
+	spr(16 + frames / 10 % 3, self.x, self.y)
 end

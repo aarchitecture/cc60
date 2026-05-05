@@ -113,8 +113,8 @@ end
 function platform:update()
 	self.spd.x = self.dir * platform_speed
 	if self.x < -16 then
-		self.x = lvl_pw
-	elseif self.x > lvl_pw then
+		self.x = level.pw
+	elseif self.x > level.pw then
 		self.x = -16
 	end
 end

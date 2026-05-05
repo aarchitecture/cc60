@@ -13,15 +13,15 @@ function draw_title()
 		sspr(47, 0, 0, 56, 32, game_w / 2 - 56, game_h / 2 - 48, 112, 64)
 	end
 	center_print("\142 / \151", game_w / 2, game_h * 0.75 - 20, 5)
-	center_print("made by", game_w / 2, game_h * 0.75, 5)
-	center_print("lucidneon", game_w / 2, game_h * 0.75 + 7, 5)
+	center_print("maddy thorson", game_w / 2, game_h * 0.75, 5)
+	center_print("noel berry", game_w / 2, game_h * 0.75 + 7, 5)
 	foreach(particles, draw_particle)
 end
 
 function draw_background()
 	cls(flash_bg and frames / bg_flash_divisor or bg_col)
 	foreach(clouds, function(c)
-		c.x += c.spd - cam_spdx
+		c.x += c.spd - cam.spdx
 		rectfill(c.x, c.y, c.x + c.w, c.y + 16 - c.w * 0.1875, cloud_col)
 		if c.x > game_w then
 			c.x = -c.w
@@ -34,15 +34,15 @@ function on_screen(obj, pad)
 	pad = pad or 0
 	local x = obj.x
 	local y = obj.y
-	return x + 8 + pad >= draw_x and
-		x - pad < draw_x + game_w and
-		y + 8 + pad >= draw_y and
-		y - pad < draw_y + game_h
+	return x + 8 + pad >= cam.draw_x and
+		x - pad < cam.draw_x + game_w and
+		y + 8 + pad >= cam.draw_y and
+		y - pad < cam.draw_y + game_h
 end
 
 function draw_world()
-	draw_layer(4, lvl_x, lvl_y, 0, 0, lvl_w, lvl_h)
-	draw_layer(3, lvl_x, lvl_y, 0, 0, lvl_w, lvl_h)
+	draw_layer("background", 0, 0, 0, 0, level.w, level.h)
+	draw_layer("deco", 0, 0, 0, 0, level.w, level.h)
 	for obj in all(draw_back) do
 		if on_screen(obj, 8) then
 			if obj.draw_below then
@@ -52,13 +52,13 @@ function draw_world()
 			end
 		end
 	end
-	draw_layer(2, lvl_x, lvl_y, 0, 0, lvl_w, lvl_h, 2)
+	draw_layer("ground", 0, 0, 0, 0, level.w, level.h, 2)
 	for obj in all(draw_front) do
 		if on_screen(obj, 8) then
 			obj:draw()
 		end
 	end
-	draw_layer(2, lvl_x, lvl_y, 0, 0, lvl_w, lvl_h, 8)
+	draw_layer("ground", 0, 0, 0, 0, level.w, level.h, 8)
 end
 
 function draw_effects()
@@ -74,6 +74,18 @@ function draw_effects()
 	end)
 end
 
+function draw_hitboxes()
+	if config.draw_hitboxes then
+		for obj in all(objects) do
+			local hb = obj.hitbox
+			if hb and on_screen(obj, 8) then
+				rect(obj.x + hb.x, obj.y + hb.y, obj.x + hb.x + hb.w - 1, obj.y + hb.y + hb.h - 1, 26)
+				circ(obj.x, obj.y, 1, 10)
+			end
+		end
+	end
+end
+
 function draw_overlay()
 	camera()
 	if ui_timer >= ui_timer_min then
@@ -82,32 +94,40 @@ function draw_overlay()
 		end
 		ui_timer -= 1
 	end
+	draw_dev_mode()
 end
 
 function _draw()
+	pal()
+
+	if text_overlay_active() then
+		draw_text_overlay()
+		return
+	end
+
 	if freeze > 0 then
 		return
 	end
-	pal()
 
-	if is_title() then
+	if is_title then
 		draw_title()
 		return
 	end
 
 	draw_background()
-	draw_x, draw_y = get_camera_draw_offset()
-	camera(draw_x, draw_y)
+	cam.draw_x, cam.draw_y = get_camera_draw_offset()
+	camera(cam.draw_x, cam.draw_y)
 	draw_world()
 	draw_effects()
+	draw_hitboxes()
 	draw_overlay()
 end
 
 function draw_particle(p)
-	p.x += p.spd - cam_spdx
-	p.y += sin(p.off) - cam_spdy
+	p.x += p.spd - cam.spdx
+	p.y += sin(p.off) - cam.spdy
 	p.off += min(particle_phase_step_cap, p.spd / particle_phase_speed_divisor)
-	rectfill(p.x + draw_x, p.y % game_h + draw_y, p.x + p.s + draw_x, p.y % game_h + p.s + draw_y, p.c)
+	rectfill(p.x + cam.draw_x, p.y % game_h + cam.draw_y, p.x + p.s + cam.draw_x, p.y % game_h + p.s + cam.draw_y, p.c)
 	if p.x > game_w + 4 then
 		p.x = -4
 		p.y = rnd(game_h)
@@ -129,9 +149,19 @@ function draw_time(x, y)
 	print(time_str, x + 1, y + 1, 7)
 end
 
+function draw_dev_mode()
+	if config.dev_mode then
+		local text = "dev mode"
+		local text_w = print(text, 0, -1000)
+		local x = game_w - text_w - 2
+		rectfill(x - 1, 4, game_w - 3, 10, 0)
+		print(text, x, 5, 7)
+	end
+end
+
 function draw_ui()
 	rectfill(game_w / 2 - 40, game_h / 2 - 6, game_w / 2 + 40, game_h / 2 + 4, 0)
-	local title = lvl_title or lvl_id .. "00 m"
+	local title = level.title or level.id
 	center_print(title, game_w / 2, game_h / 2 - 2, 7)
 	draw_time(4, 4)
 end

@@ -1,21 +1,5 @@
 -- [constants]
 
-fixed_btn = {
-	left = 0,
-	right = 1,
-	up = 2,
-	down = 3,
-	jump = 4,
-	dash = 5,
-}
-
-alt_dir_btn = {
-	left = 8,		-- a
-	right = 9,		-- d
-	up = 10,			-- w
-	down = 11,		-- s
-}
-
 title_flash_start = 100.0000000000000000					-- frame_count*2: round(50*2)
 title_flash_end = -30.0000000000000000						-- unchanged
 title_flash_palette_threshold = 20.0000000000000000	-- frame_count*2: round(10*2)
@@ -71,12 +55,6 @@ walk_anim_step = 0.1250000000000000							-- anim_step*0.5: fp2(16384,32768)
 hair_count = 3
 hair_y_offset = 0.5000000000000000							-- unchanged
 hair_pull = 0.35													-- how strongly segments chase parent
-hair_color = 8														-- matches the hair color in the sprite sheet
-hair_colors = {
-	[0] = 12,
-	[1] = 8,
-	[2] = { 11, 26, 7, 26 },									-- if it's a table, the colors are cycled through frame-by-frame in that order
-}
 
 landing_smoke_offset_y = 4.0000000000000000				-- unchanged
 wall_slide_smoke_x = 6.0000000000000000					-- unchanged
@@ -152,22 +130,3 @@ platform_speed = 0.3249969482421875							-- velocity*0.5: fp2(42598,32768)
 message_index_step = 0.5000000000000000					-- text_step, unchanged
 camera_deadzone_x = 12.0000000000000000					-- pixel deadzone
 camera_deadzone_y = 8.0000000000000000						-- pixel deadzone
-
--- globals
-
-objects = {}
-by_type = {}
-solids = {}
-semis = {}
-draw_back = {}
-draw_front = {}
-got_fruit = {}
-cam_target = nil
-
-freeze = 0
-delay_restart = 0
-music_timer = 0
-ui_timer = -99
-pause_player = false
-
-draw_x, draw_y, cam_x, cam_y, cam_spdx, cam_spdy = 0, 0, 0, 0, 0, 0

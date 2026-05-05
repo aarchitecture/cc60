@@ -13,7 +13,16 @@ end
 function fruit:update()
 	check_fruit(self)
 	self.off += fruit_phase_step
-	self.y = self.start + sin(self.off) * fruit_bob_height
+	if not config.static_balloons then
+		self.y = self.start + sin(self.off) * fruit_bob_height
+	end
+end
+function fruit:draw()
+	local y = self.y
+	if config.static_balloons then
+		y += sin(self.off) * fruit_bob_height
+	end
+	spr(self.spr, self.x, y)
 end
 
 fly_fruit = {
@@ -22,6 +31,7 @@ fly_fruit = {
 
 function fly_fruit:init()
 	self.start = self.y
+	self.off = 0
 	self.step = 0.5
 	self.sfx_delay = fly_fruit_sfx_delay
 end
@@ -40,16 +50,20 @@ function fly_fruit:update()
 		end
 	else
 		self.step += fly_fruit_idle_step
-		self.spd.y = sin(self.step) * fly_fruit_idle_amplitude
+		if config.static_balloons then
+			self.off = sin(self.step) * fly_fruit_idle_amplitude
+		else
+			self.spd.y = sin(self.step) * fly_fruit_idle_amplitude
+		end
 	end
 	check_fruit(self)
 end
 
 function fly_fruit:draw()
-	local x, y = self.x, self.y
+	local x, y = self.x, self.y + self.off
 	spr(20, x, y)
 	for ox = -6, 6, 12 do
-		spr((has_dashed or sin(self.step) >= 0) and 40 or self.y > self.start and 42 or 41, x + ox, y - 2, ox == -6)
+		spr((has_dashed or sin(self.step) >= 0) and 40 or y > self.start and 42 or 41, x + ox, y - 2, ox == -6)
 	end
 end
 
@@ -122,6 +136,15 @@ function fake_wall:draw()
 end
 
 berry_key = {}
+function berry_key:ready()
+	if not config.fix_evercore_keys then
+		return
+	end
+
+	if not by_type[chest] then
+		destroy_object(self)
+	end
+end
 function berry_key:update()
 	self.spr = flr(25.5 + sin(frames / 60))
 	if frames == 36 then
@@ -131,6 +154,13 @@ function berry_key:update()
 		sfx(23)
 		destroy_object(self)
 		has_key = true
+	end
+end
+function berry_key:draw()
+	if config.fix_key_wobble then
+		spr(self.spr, self.x + (self.flip.x and 1 or 0), self.y, self.flip.x)
+	else
+		self:draw_sprite()
 	end
 end
 
@@ -166,7 +196,9 @@ end
 function balloon:update()
 	if self.show then
 		self.offset += balloon_phase_step
-		self.y = self.start + sin(self.offset) * balloon_bob_height
+		if not config.static_balloons then
+			self.y = self.start + sin(self.offset) * balloon_bob_height
+		end
 		local hit = self.player_here()
 		if hit and hit.djump < max_djump then
 			sfx(6)
@@ -187,10 +219,13 @@ end
 function balloon:draw()
 	if self.show then
 		local x, y = self.x, self.y
+		if config.static_balloons then
+			y += sin(self.offset) * balloon_bob_height
+		end
 		for i = 7, 13 do
 			pset(x + 4 + sin(self.offset * 2 + i / 10), y + i, 6)
 		end
-		self:draw_sprite()
+		spr(self.spr, x, y)
 	end
 end
 

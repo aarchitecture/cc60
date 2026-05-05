@@ -35,7 +35,7 @@ function add_object(obj)
 	end
 
 	if obj.type == player or obj.type == player_spawn then
-		cam_target = obj
+		cam.target = obj
 	end
 end
 
@@ -48,8 +48,8 @@ function remove_object(obj)
 	del(semis, obj)
 	del(draw_back, obj)
 	del(draw_front, obj)
-	if cam_target == obj then
-		cam_target = nil
+	if cam.target == obj then
+		cam.target = nil
 	end
 end
 
@@ -57,8 +57,8 @@ function nil_if_empty(list)
 	return #list > 0 and list or nil
 end
 
-function init_object(type, x, y, tile)
-	local id = x .. "," .. y .. "," .. lvl_id
+function init_object(type, x, y, tile, extra_data)
+	local id = x .. "," .. y .. "," .. level.id
 	if type.check_fruit and got_fruit[id] then
 		return
 	end
@@ -81,6 +81,12 @@ function init_object(type, x, y, tile)
 	if tile and tile & 0x4000 > 0 then
 		obj.flip.x = true
 		obj.spr -= 0x4000
+	end
+
+	if extra_data then
+		for k, v in pairs(extra_data) do
+			obj[k] = v
+		end
 	end
 
 	function obj.left() return obj.x + obj.hitbox.x end
@@ -110,9 +116,11 @@ function init_object(type, x, y, tile)
 	end
 
 	function obj.is_flag(ox, oy, flag)
-		for i = max(0, (obj.left() + ox) \ 8), min(lvl_w - 1, (obj.right() + ox) / 8) do
-			for j = max(0, (obj.top() + oy) \ 8), min(lvl_h - 1, (obj.bottom() + oy) / 8) do
-				if fget(tile_at(i, j, 2), flag) then
+		ox = ox or 0
+		oy = oy or 0
+		for i = max(0, (obj.left() + ox) \ 8), min(level.w - 1, (obj.right() + ox) / 8) do
+			for j = max(0, (obj.top() + oy) \ 8), min(level.h - 1, (obj.bottom() + oy) / 8) do
+				if fget(tile_at(i, j, "ground"), flag) then
 					return true
 				end
 			end
@@ -221,6 +229,7 @@ function init_object(type, x, y, tile)
 
 	function obj:init() end
 	function obj:update() end
+	function obj:ready() end
 
 	function obj:draw()
 		spr(obj.spr, obj.x, obj.y, obj.flip.x, obj.flip.y)
@@ -243,28 +252,28 @@ end
 
 function move_camera(obj)
 	local focus_x = obj.x + 4
-	local target_x = cam_x
-	if focus_x < cam_x - camera_deadzone_x then
+	local target_x = cam.x
+	if focus_x < cam.x - camera_deadzone_x then
 		target_x = focus_x + camera_deadzone_x
-	elseif focus_x > cam_x + camera_deadzone_x then
+	elseif focus_x > cam.x + camera_deadzone_x then
 		target_x = focus_x - camera_deadzone_x
 	end
 
 	local focus_y = obj.y
-	local target_y = cam_y
-	if focus_y < cam_y - camera_deadzone_y then
+	local target_y = cam.y
+	if focus_y < cam.y - camera_deadzone_y then
 		target_y = focus_y + camera_deadzone_y
-	elseif focus_y > cam_y + camera_deadzone_y then
+	elseif focus_y > cam.y + camera_deadzone_y then
 		target_y = focus_y - camera_deadzone_y
 	end
 
 	target_x, target_y = clamp_camera_target(target_x, target_y)
 
-	cam_spdx = target_x - cam_x
-	cam_spdy = target_y - cam_y
+	cam.spdx = target_x - cam.x
+	cam.spdy = target_y - cam.y
 
-	cam_x = target_x
-	cam_y = target_y
+	cam.x = target_x
+	cam.y = target_y
 end
 
 include "objects/terrain.lua"
